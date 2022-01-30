@@ -6,14 +6,25 @@ import (
 	"net/http"
 )
 
-var errRequestFailed error = errors.New("request failed")
+var errRequestFailed error = errors.New("request failed [%d]")
 
-func HitUrl(url string) error {
-	fmt.Println("Checking", url)
+type Website struct {
+	url    string
+	status error
+}
+
+func HitUrl(url string, c chan<- Website) {
 	resp, err := http.Get(url)
-	if err != nil || resp.StatusCode >= 400 {
-		fmt.Println(err, resp.StatusCode)
-		return errRequestFailed
+	if resp.StatusCode >= 400 {
+		err = fmt.Errorf(errRequestFailed.Error(), resp.StatusCode)
 	}
-	return nil
+	c <- Website{url: url, status: err}
+}
+
+func (w Website) Url() string {
+	return w.url
+}
+
+func (w Website) Status() error {
+	return w.status
 }

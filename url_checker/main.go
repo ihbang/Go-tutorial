@@ -7,7 +7,8 @@ import (
 )
 
 func main() {
-	results := map[string]string{}
+	c := make(chan checker.Website)
+	websites := []checker.Website{}
 	urls := []string{
 		"https://www.google.com",
 		"https://www.naver.com",
@@ -19,12 +20,18 @@ func main() {
 		"https://www.instagram.com",
 	}
 	for _, url := range urls {
-		result := "SUCCESS"
-		err := checker.HitUrl(url)
-		if err != nil {
-			result = "FAILED"
+		go checker.HitUrl(url, c)
+	}
+	for i := 0; i < len(urls); i++ {
+		website := <-c
+		websites = append(websites, website)
+	}
+	for _, website := range websites {
+		status := website.Status()
+		if status != nil {
+			fmt.Println(website.Url(), status)
+		} else {
+			fmt.Println(website.Url(), "success")
 		}
-		results[url] = result
-		fmt.Println(url, result)
 	}
 }
