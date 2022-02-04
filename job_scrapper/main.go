@@ -7,19 +7,22 @@ import (
 )
 
 func main() {
-	baseURL := "https://kr.indeed.com/jobs?q=golang"
+	baseURL := "https://kr.indeed.com/jobs?q=python"
 	suffix := ""
+	jobs := []scrapper.JobCard{}
 
 	for {
 		url := baseURL + "&" + suffix
 		fmt.Println("Requesting", url)
 
-		res := scrapper.GetPage(url)
-		defer res.Body.Close()
+		slice := scrapper.GetCards(url)
+		fmt.Println(slice)
+		jobs = append(jobs, slice...)
 
-		suffix = scrapper.GetNextPage(res)
+		suffix = scrapper.GetNextPage(url)
 		if suffix == "" {
 			break
 		}
 	}
+	fmt.Println(jobs)
 }
